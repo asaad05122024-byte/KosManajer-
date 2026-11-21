@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KosManager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- ============ HALAMAN LOGIN ============ -->
+<section id="loginScreen" class="onboarding">
+  <div class="card setup-card" style="text-align: center;">
+    <div class="brand" style="justify-content: center; margin-bottom: 20px;">
+      <i data-lucide="building-2"></i><span>KosManager</span>
+    </div>
+    <h2>Masuk ke Akun Anda</h2>
+    <p class="muted">Kelola data kos lebih mudah dan aman.</p>
+    <br>
+    
+    <form id="formLogin" onsubmit="handleEmailLogin(event)" style="text-align: left;">
+      <label class="field"><span>Email / Username</span>
+        <input type="email" id="loginEmail" placeholder="admin@kos.com" required>
+      </label>
+      <label class="field" style="margin-top: 12px;"><span>Password</span>
+        <input type="password" id="loginPassword" placeholder="••••••••" required>
+      </label>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">Masuk ke Aplikasi</button>
+    </form>
+    
+    <div style="margin-top: 15px;">
+      <a href="#" onclick="openRegisterModal(); return false;" style="font-size:0.8125rem; color: var(--primary);">Belum punya akun? Daftar di sini</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODAL PENDAFTARAN AKUN BARU ============ -->
+<div id="modalRegister" class="card setup-card" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); background: white;">
+  <div class="brand" style="justify-content: center; margin-bottom: 15px;">
+    <i data-lucide="user-plus"></i><span>Daftar Akun Baru</span>
+  </div>
+  <p class="muted" style="text-align: center; font-size:0.8125rem; margin-bottom: 15px;">Buat akun agar data kos Anda tersinkronisasi dan bisa diakses dari perangkat mana saja.</p>
+  
+  <form id="formRegister" onsubmit="handleRegister(event)">
+    <label class="field"><span>Email</span>
+      <input type="email" id="regEmail" placeholder="emailanda@gmail.com" required>
+    </label>
+    <label class="field" style="margin-top: 10px;"><span>Password Baru</span>
+      <input type="password" id="regPassword" placeholder="Minimal 6 karakter" required>
+    </label>
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button type="button" class="btn btn-ghost" onclick="closeRegisterModal()" style="flex: 1;">Batal</button>
+      <button type="submit" class="btn btn-primary" style="flex: 1;">Daftar</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ SETUP AWAL: akun baru, semua data kosong ============ -->
+<section id="onboarding" class="onboarding" hidden>
+  <form id="formSetup" class="card setup-card" novalidate>
+    <div class="brand"><i data-lucide="building-2"></i><span>KosManager</span></div>
+    <h1 data-i18n="setup_title">Selamat datang! Yuk buat akun kosmu</h1>
+    <p class="muted" data-i18n="setup_desc">Semua data masih kosong. Isi profil kos dulu, lalu atur tipe kamar, harga, kamar, dan penghuni sesuai kosmu.</p>
+    <label class="field"><span data-i18n="f_owner">Nama Pemilik</span><input name="ownerName" required><small class="err"></small></label>
+    <label class="field"><span data-i18n="f_kos">Nama Kos</span><input name="kosName" required><small class="err"></small></label>
+    <label class="field"><span data-i18n="f_address">Alamat Kos</span><input name="address" required><small class="err"></small></label>
+    <label class="field"><span data-i18n="f_kos_wa">Nomor WhatsApp Kos</span><input name="wa" type="tel" placeholder="08xxxxxxxxxx" required><small class="err"></small></label>
+    <button class="btn btn-primary btn-block" data-i18n="setup_btn">Mulai kelola kos</button>
+  </form>
+</section>
+
+
+<!-- ============ APLIKASI ============ -->
+<div id="app" class="app" hidden>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><i data-lucide="building-2"></i><span id="brandName">KosManager</span></div>
+    <nav id="mainNav" aria-label="Menu utama">
+      <a href="#dashboard" data-page="dashboard"><i data-lucide="layout-dashboard"></i><span data-i18n="nav_dashboard">Dashboard</span></a>
+      <a href="#penghuni" data-page="penghuni"><i data-lucide="users"></i><span data-i18n="nav_residents">Penghuni</span></a>
+      <a href="#kamar" data-page="kamar"><i data-lucide="door-open"></i><span data-i18n="nav_rooms">Kamar</span></a>
+      <a href="#pembayaran" data-page="pembayaran"><i data-lucide="wallet"></i><span data-i18n="nav_payments">Pembayaran</span></a>
+      <a href="#pengeluaran" data-page="pengeluaran"><i data-lucide="receipt"></i><span data-i18n="nav_expenses">Pengeluaran</span></a>
+      <a href="#laporan" data-page="laporan"><i data-lucide="bar-chart-3"></i><span data-i18n="nav_reports">Laporan</span></a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h2 class="app-title">KosManager</h2>
+      <div class="topbar-right">
+        <select id="langSelect" aria-label="Bahasa"><option value="id">🇮🇩 Indonesia</option><option value="en">🇬🇧 English</option><option value="zh">🇨🇳 中文</option></select>
+        <div class="notif">
+          <button id="btnNotif" class="icon-btn" aria-label="Notifikasi"><i data-lucide="bell"></i><span id="notifCount" class="badge-dot" hidden>0</span></button>
+          <div id="notifPanel" class="dropdown" hidden></div>
+        </div>
+        <a href="#pengaturan" id="btnSettingsTop" class="icon-btn settings-btn" aria-label="Pengaturan" title="Pengaturan"><i data-lucide="settings"></i></a>
+        <div class="profile"><span id="ownerAvatar" class="avatar">O</span><div><strong id="ownerName">Owner</strong><small id="kosNameTop" class="muted"></small></div></div>
+      </div>
+    </header>
+
+    <main id="content">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="page" id="page-dashboard">
+        <div class="page-head"><div><h1 data-i18n="nav_dashboard">Dashboard</h1><p class="muted" id="dashSub" data-i18n="dash_sub">Ringkasan kondisi kosmu bulan ini</p></div></div>
+
+        <div class="quick">
+          <button class="btn btn-soft" data-action="addResident"><i data-lucide="user-plus"></i><span data-i18n="qa_resident">Tambah Penghuni</span></button>
+          <button class="btn btn-soft" data-action="addRoom"><i data-lucide="door-open"></i><span data-i18n="qa_room">Tambah Kamar</span></button>
+          <button class="btn btn-soft" data-action="recordPayment"><i data-lucide="banknote"></i><span data-i18n="qa_payment">Catat Pembayaran</span></button>
+          <button class="btn btn-soft" data-action="addExpense"><i data-lucide="receipt"></i><span data-i18n="qa_expense">Tambah Pengeluaran</span></button>
+          <button class="btn btn-soft" data-action="makeReport"><i data-lucide="file-text"></i><span data-i18n="qa_report">Buat Laporan</span></button>
+        </div>
+
+        <!-- Panduan awal: tampil selama data masih kosong -->
+        <section id="getStarted" class="card get-started" hidden>
+          <h3 data-i18n="gs_title">Mulai dari sini</h3>
+          <ol>
+            <li><a href="#pengaturan" data-i18n="gs_1">Atur tipe kamar dan harganya di Pengaturan</a></li>
+            <li><a href="#kamar" data-i18n="gs_2">Tambahkan kamar di menu Kamar</a></li>
+            <li><a href="#penghuni" data-i18n="gs_3">Tambahkan penghuni dan pilih kamarnya</a></li>
+          </ol>
+        </section>
+
+        <div id="statsGrid" class="stats">
+          <article class="card stat"><i data-lucide="building"></i><p data-i18n="st_rooms">Total Kamar</p><h3 id="stRooms">0</h3></article>
+          <article class="card stat"><i data-lucide="door-closed"></i><p data-i18n="st_occupied">Kamar Terisi</p><h3 id="stOccupied">0</h3></article>
+          <article class="card stat"><i data-lucide="door-open"></i><p data-i18n="st_vacant">Kamar Kosong</p><h3 id="stVacant">0</h3></article>
+          <article class="card stat"><i data-lucide="percent"></i><p data-i18n="st_occupancy">Tingkat Hunian</p><h3 id="stOccupancy">0%</h3></article>
+          <article class="card stat tone-success"><i data-lucide="trending-up"></i><p data-i18n="st_income">Pemasukan Bulan Ini</p><h3 id="stIncome">Rp 0</h3></article>
+          <article class="card stat tone-danger"><i data-lucide="trending-down"></i><p data-i18n="st_expense">Total Pengeluaran</p><h3 id="stExpense">Rp 0</h3></article>
+          <article class="card stat tone-warning"><i data-lucide="alert-circle"></i><p data-i18n="st_arrears">Tunggakan Pembayaran</p><h3 id="stArrears">Rp 0</h3></article>
+          <article class="card stat tone-primary"><i data-lucide="scale"></i><p data-i18n="st_net">Arus Kas Bersih</p><h3 id="stNet">Rp 0</h3></article>
+        </div>
+
+        <section class="card chart-card">
+          <div class="card-head">
+            <h3 data-i18n="chart_title">Pemasukan &amp; Pengeluaran</h3>
+            <select id="chartPeriod">
+              <option value="7d" data-i18n="per_7d">7 hari terakhir</option>
+              <option value="month" data-i18n="per_month">Bulan ini</option>
+              <option value="6m" selected data-i18n="per_6m">6 bulan terakhir</option>
+              <option value="1y" data-i18n="per_1y">1 tahun terakhir</option>
+            </select>
+          </div>
+          <div class="chart-wrap"><canvas id="financeChart"></canvas></div>
+        </section>
+
+        <div class="two-col">
+          <section class="card">
+            <div class="card-head"><h3 data-i18n="recent_pay">Pembayaran Terbaru</h3></div>
+            <div id="recentPayments"></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><h3 data-i18n="need_remind">Perlu Diingatkan</h3><button class="btn btn-ghost btn-sm" data-action="bulkReminder" data-i18n="bulk_btn">Pengingat massal</button></div>
+            <div id="dueList"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- ===== PENGHUNI ===== -->
+      <section class="page" id="page-penghuni" hidden>
+        <div class="page-head"><h1 data-i18n="nav_residents">Penghuni</h1><button class="btn btn-primary" data-action="addResident"><i data-lucide="user-plus"></i><span data-i18n="qa_resident">Tambah Penghuni</span></button></div>
+        <div class="toolbar">
+          <input id="resSearch" type="search" data-i18n-ph="ph_res_search" placeholder="Cari nama atau nomor kamar">
+          <select id="resFilter">
+            <option value="all" data-i18n="f_all">Semua status</option>
+            <option value="PAID" data-i18n="s_paid">Sudah Lunas</option>
+            <option value="UNPAID" data-i18n="s_unpaid">Belum Dibayar</option>
+            <option value="OVERDUE" data-i18n="s_overdue">Terlambat</option>
+          </select>
+          <select id="resSort">
+            <option value="name" data-i18n="sort_name">Urutkan: Nama</option>
+            <option value="due" data-i18n="sort_due">Urutkan: Jatuh tempo</option>
+            <option value="rent" data-i18n="sort_rent">Urutkan: Harga sewa</option>
+          </select>
+        </div>
+        <div id="residentList" class="cards-grid"></div>
+      </section>
+
+      <!-- ===== KAMAR ===== -->
+      <section class="page" id="page-kamar" hidden>
+        <div class="page-head"><h1 data-i18n="nav_rooms">Kamar</h1>
+          <div class="btn-row"><a class="btn btn-ghost" href="#pengaturan" data-i18n="room_types_link">Atur tipe &amp; harga</a><button class="btn btn-primary" data-action="addRoom"><i data-lucide="plus"></i><span data-i18n="qa_room">Tambah Kamar</span></button></div></div>
+        <div class="toolbar">
+          <input id="roomSearch" type="search" data-i18n-ph="ph_room_search" placeholder="Cari nomor kamar">
+          <select id="roomStatus">
+            <option value="all" data-i18n="f_all">Semua status</option>
+            <option value="TERISI" data-i18n="r_occupied">Terisi</option>
+            <option value="TERSEDIA" data-i18n="r_available">Tersedia</option>
+          </select>
+          <select id="roomTypeFilter"></select>
+        </div>
+        <div id="roomGrid" class="cards-grid"></div>
+      </section>
+
+      <!-- ===== PEMBAYARAN ===== -->
+      <section class="page" id="page-pembayaran" hidden>
+        <div class="page-head"><h1 data-i18n="nav_payments">Pembayaran</h1><button class="btn btn-primary" data-action="bulkReminder"><i data-lucide="message-circle"></i><span data-i18n="bulk_btn">Pengingat massal</span></button></div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="bills" data-i18n="tab_bills">Tagihan</button>
+          <button class="tab" data-tab="reminders" data-i18n="tab_reminders">Riwayat Pengingat</button>
+        </div>
+
+        <div id="tab-bills">
+          <div class="toolbar">
+            <input id="paySearch" type="search" data-i18n-ph="ph_pay_search" placeholder="Cari penghuni atau kamar">
+            <select id="payStatus">
+              <option value="all" data-i18n="f_all">Semua status</option>
+              <option value="PAID" data-i18n="s_paid">Sudah Lunas</option>
+              <option value="UNPAID" data-i18n="s_unpaid">Belum Dibayar</option>
+              <option value="OVERDUE" data-i18n="s_overdue">Terlambat</option>
+            </select>
+            <input id="payMonth" type="month" aria-label="Bulan">
+          </div>
+          <div class="table-wrap bills-table-wrap"><table class="bills-table">
+            <thead><tr><th data-i18n="th_inv">No. Tagihan</th><th data-i18n="th_resident">Penghuni</th><th data-i18n="th_room">Kamar</th><th data-i18n="th_period">Periode</th><th data-i18n="th_amount">Jumlah</th><th data-i18n="th_due">Jatuh Tempo</th><th data-i18n="th_status">Status</th><th data-i18n="th_action">Aksi</th></tr></thead>
+            <tbody id="billBody"></tbody>
+          </table></div>
+        </div>
+
+        <div id="tab-reminders" hidden>
+          <p class="note"><i data-lucide="info"></i><span data-i18n="rem_note">Pesan dibuka lewat WhatsApp dan tetap perlu dikirim sendiri oleh owner.</span></p>
+          <div class="table-wrap reminders-table-wrap"><table class="reminders-table">
+            <thead><tr><th data-i18n="th_date">Tanggal</th><th data-i18n="th_resident">Penghuni</th><th data-i18n="th_template">Jenis Pesan</th><th data-i18n="th_status">Status</th><th data-i18n="th_opened">Dibuka</th><th data-i18n="th_confirmed">Dikonfirmasi</th></tr></thead>
+            <tbody id="reminderBody"></tbody>
+          </table></div>
+        </div>
+      </section>
+
+      <!-- ===== PENGELUARAN ===== -->
+      <section class="page" id="page-pengeluaran" hidden>
+        <div class="page-head"><h1 data-i18n="nav_expenses">Pengeluaran</h1><button class="btn btn-primary" data-action="addExpense"><i data-lucide="plus"></i><span data-i18n="qa_expense">Tambah Pengeluaran</span></button></div>
+        <div class="toolbar">
+          <input id="expSearch" type="search" data-i18n-ph="ph_exp_search" placeholder="Cari pengeluaran">
+          <select id="expCategory" data-fill="categories" data-all="true"></select>
+          <input id="expFrom" type="date" aria-label="Dari tanggal">
+          <input id="expTo" type="date" aria-label="Sampai tanggal">
+        </div>
+        <p class="total-chip"><span data-i18n="exp_total">Total ditampilkan:</span> <strong id="expTotal">Rp 0</strong></p>
+        <div class="table-wrap expense-table-wrap"><table class="expenses-table">
+          <thead><tr><th data-i18n="th_name">Nama</th><th data-i18n="th_category">Kategori</th><th data-i18n="th_date">Tanggal</th><th data-i18n="th_amount">Jumlah</th><th data-i18n="th_method">Metode</th><th data-i18n="th_action">Aksi</th></tr></thead>
+          <tbody id="expenseBody"></tbody>
+        </table></div>
+      </section>
+
+      <!-- ===== LAPORAN ===== -->
+      <section class="page" id="page-laporan" hidden>
+        <div class="page-head"><h1 data-i18n="nav_reports">Laporan</h1>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnExportPdf"><i data-lucide="file-down"></i><span>PDF</span></button>
+            <button class="btn btn-ghost" id="btnExportXlsx"><i data-lucide="sheet"></i><span>Excel</span></button>
+            <button class="btn btn-ghost" id="btnPrintReport"><i data-lucide="printer"></i><span data-i18n="print">Cetak</span></button>
+          </div></div>
+        <div class="toolbar">
+          <select id="repPeriod">
+            <option value="today" data-i18n="rp_today">Hari ini</option>
+            <option value="week" data-i18n="rp_week">Minggu ini</option>
+            <option value="month" selected data-i18n="rp_month">Bulan ini</option>
+            <option value="lastmonth" data-i18n="rp_last">Bulan sebelumnya</option>
+            <option value="custom" data-i18n="rp_custom">Rentang tanggal khusus</option>
+          </select>
+          <span id="repCustom" class="range" hidden><input id="repFrom" type="date" aria-label="Dari"><input id="repTo" type="date" aria-label="Sampai"></span>
+        </div>
+        <div id="reportBody">
+          <section class="card" id="repIncome"><h3 data-i18n="rep_income">Laporan Pemasukan</h3><div class="rep-content"></div></section>
+          <section class="card" id="repExpense"><h3 data-i18n="rep_expense">Laporan Pengeluaran</h3><div class="rep-content"></div></section>
+          <section class="card" id="repCash"><h3 data-i18n="rep_cash">Laporan Arus Kas</h3><div class="rep-content"></div></section>
+          <section class="card" id="repOcc"><h3 data-i18n="rep_occ">Laporan Penghuni &amp; Kamar</h3><div class="rep-content"></div></section>
+        </div>
+      </section>
+
+      <!-- ===== PENGATURAN ===== -->
+      <section class="page" id="page-pengaturan" hidden>
+        <div class="page-head"><h1 data-i18n="nav_settings">Pengaturan</h1></div>
+
+        <section class="card" id="setProfile">
+          <h3 data-i18n="set_profile">Profil Kos</h3>
+          <form id="formProfile" class="grid-2" novalidate>
+            <label class="field"><span data-i18n="f_kos">Nama Kos</span><input name="kosName" required><small class="err"></small></label>
+            <label class="field"><span data-i18n="f_owner">Nama Pemilik</span><input name="ownerName" required><small class="err"></small></label>
+            <label class="field full"><span data-i18n="f_address">Alamat Kos</span><input name="address" required><small class="err"></small></label>
+            <label class="field"><span data-i18n="f_kos_wa">Nomor WhatsApp Kos</span><input name="wa" type="tel" required><small class="err"></small></label>
+            <label class="field"><span data-i18n="f_logo">Logo Kos</span><input name="logo" type="file" accept="image/*"></label>
+            <label class="field full"><span data-i18n="f_info">Informasi Tambahan</span><textarea name="info" rows="2"></textarea></label>
+            <div class="full"><button class="btn btn-primary" data-i18n="save">Simpan</button></div>
+          </form>
+        </section>
+
+        <section class="card" id="setTypes">
+          <h3 data-i18n="set_types">Tipe Kamar &amp; Harga</h3>
+          <p class="muted" data-i18n="set_types_desc">Kamu yang menentukan nama tipe dan harga sewanya. Harga masih bisa disesuaikan per kamar dan per penghuni.</p>
+          <form id="formType" class="grid-2" novalidate>
+            <input type="hidden" name="id">
+            <label class="field"><span data-i18n="f_type_name">Nama Tipe</span><input name="name" required placeholder="Contoh: Standard"><small class="err"></small></label>
+            <label class="field"><span data-i18n="f_price">Harga Sewa per Bulan (Rp)</span><input name="price" type="number" min="0" step="1000" required><small class="err"></small></label>
+            <label class="field full"><span data-i18n="f_facilities">Fasilitas</span><input name="facilities" placeholder="Kasur, lemari, kamar mandi dalam"></label>
+            <div class="full btn-row"><button class="btn btn-primary" id="btnSaveType" data-i18n="type_save">Simpan tipe</button><button type="button" class="btn btn-ghost" id="btnCancelType" hidden data-i18n="cancel">Batal</button></div>
+          </form>
+          <div id="typeList" class="type-list"></div>
+        </section>
+
+        <section class="card" id="setTemplates">
+          <h3 data-i18n="set_wa">Template Pesan WhatsApp</h3>
+          <p class="muted" data-i18n="set_wa_desc">Placeholder yang bisa dipakai: {nama}, {kamar}, {jumlah}, {jatuh_tempo}, {nama_kos}</p>
+          <form id="formTemplates" novalidate>
+            <label class="field"><span data-i18n="tpl_reminder">Pengingat pembayaran</span><textarea name="reminder" rows="4"></textarea></label>
+            <label class="field"><span data-i18n="tpl_overdue">Pemberitahuan keterlambatan</span><textarea name="overdue" rows="4"></textarea></label>
+            <label class="field"><span data-i18n="tpl_paid">Konfirmasi pembayaran berhasil</span><textarea name="paid" rows="4"></textarea></label>
+            <label class="field"><span data-i18n="tpl_announce">Pengumuman umum</span><textarea name="announce" rows="4"></textarea></label>
+            <div class="btn-row"><button class="btn btn-primary" data-i18n="save">Simpan</button><button type="button" class="btn btn-ghost" id="btnResetTemplates" data-i18n="tpl_reset">Kembalikan bawaan</button></div>
+          </form>
+        </section>
+
+        <section class="card" id="setLang">
+          <h3 data-i18n="set_lang">Bahasa</h3>
+          <select id="langSetting"><option value="id">🇮🇩 Indonesia</option><option value="en">🇬🇧 English</option><option value="zh">🇨🇳 中文（简体）</option></select>
+        </section>
+
+        <section class="card" id="setFont">
+          <h3>Ukuran Font</h3>
+          <div class="font-size-intro">
+            <span class="font-size-intro-icon"><i data-lucide="type"></i></span>
+            <p class="muted">Sesuaikan ukuran seluruh tulisan KosManager, mulai dari menu, judul, formulir, tabel, hingga pesan dan jendela dialog.</p>
+          </div>
+          <div class="font-size-options" role="group" aria-label="Pilihan ukuran font">
+            <button type="button" class="font-size-option" data-font-size="small" aria-pressed="false">
+              <span class="font-preview font-preview-small">Aa</span><strong>Kecil</strong><small>Lebih ringkas</small>
+            </button>
+            <button type="button" class="font-size-option" data-font-size="medium" aria-pressed="true">
+              <span class="font-preview font-preview-medium">Aa</span><strong>Sedang</strong><small>Ukuran standar</small>
+            </button>
+            <button type="button" class="font-size-option" data-font-size="large" aria-pressed="false">
+              <span class="font-preview font-preview-large">Aa</span><strong>Besar</strong><small>Mudah dibaca</small>
+            </button>
+          </div>
+          <p class="font-size-hint" id="fontSizeHint" aria-live="polite">Ukuran font saat ini: Sedang</p>
+        </section>
+
+        <section class="card" id="setData">
+          <h3 data-i18n="set_data">Data</h3>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="btnBackup"><i data-lucide="download"></i><span data-i18n="data_export">Ekspor cadangan</span></button>
+            <button class="btn btn-ghost" id="btnRestore"><i data-lucide="upload"></i><span data-i18n="data_import">Impor cadangan</span></button>
+            <input id="fileRestore" type="file" accept="application/json" hidden>
+            <button class="btn btn-danger" id="btnResetData"><i data-lucide="trash-2"></i><span data-i18n="data_reset">Reset semua data</span></button>
+          </div>
+        </section>
+
+        <section class="card" id="setDiagnostics">
+          <h3>Diagnostik Sinkronisasi</h3>
+          <p class="muted">Periksa sesi login, akses baca, serta izin tambah, ubah, dan hapus menggunakan data sementara bertanda khusus. Data kos yang sudah ada tidak digunakan sebagai data uji.</p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" id="btnRunDiagnostics"><i data-lucide="activity"></i><span>Jalankan diagnostik</span></button>
+          </div>
+          <div id="diagStatus" class="diag-status" role="status" aria-live="polite">Belum ada pemeriksaan.</div>
+          <pre id="diagOutput" class="diag-output" hidden></pre>
+          <small class="muted">Catatan: pengujian membuat data sementara di tabel operasional akun ini, lalu berusaha menghapusnya kembali. Jangan tutup aplikasi saat pemeriksaan berjalan.</small>
+        </section>
+
+        <!-- Keamanan & Reset Password via WA -->
+        <section class="card" id="setKeamanan" style="margin-top: 16px;">
+          <h3>Keamanan &amp; Sandi</h3>
+          <p class="muted">Ubah password akun Anda. Jika lupa, verifikasi akan dikirim ke nomor WhatsApp pribadi pemilik.</p>
+          
+          <form id="formChangePassword" onsubmit="handleChangePassword(event)" style="margin-top: 15px;">
+            <label class="field"><span>Nomor WhatsApp Pribadi (Untuk Pemulihan)</span>
+              <input type="tel" id="ownerWaRecovery" placeholder="08xxxxxxxxxx" required>
+            </label>
+            <label class="field" style="margin-top: 10px;"><span>Password Baru</span>
+              <input type="password" id="newPassword" placeholder="Minimal 6 karakter" required>
+            </label>
+            <button type="submit" class="btn btn-soft" style="margin-top: 12px;">Perbarui Password &amp; No WA</button>
+          </form>
+        </section>
+
+        <!-- Tombol Logout -->
+        <section class="card" id="setAkun" style="border-color: #dc3545; margin-top: 16px;">
+          <h3 style="color: #dc3545;">Akun &amp; Keamanan</h3>
+          <p class="muted">Keluar dari perangkat ini untuk mengamankan data kos Anda.</p>
+          <div class="btn-row" style="margin-top: 15px;">
+            <button type="button" class="btn btn-danger" id="btnLogout">
+              <i data-lucide="log-out"></i> Keluar dari Akun
+            </button>
+          </div>
+        </section>
+
+        <!-- Paket & Langganan KosManager -->
+        <section class="card subscription-section" id="subscriptionSection">
+          <div class="subscription-heading">
+            <div>
+              <span class="eyebrow">PAKET &amp; LANGGANAN</span>
+              <h3>Kelola kos lebih praktis dengan paket yang tepat</h3>
+              <p class="muted">Pilih paket sesuai jumlah kamar dan kebutuhan pengelolaan kos Anda.</p>
+            </div>
+            <span class="subscription-icon"><i data-lucide="crown"></i></span>
+          </div>
+          <div id="currentPlanStatus" class="current-plan-status" aria-live="polite"></div>
+          <div class="duration-picker">
+            <label for="subscriptionDuration">Pilih masa berlangganan</label>
+            <select id="subscriptionDuration">
+              <option value="1">1 Bulan</option>
+              <option value="3">3 Bulan</option>
+              <option value="6">6 Bulan</option>
+              <option value="12" selected>1 Tahun</option>
+            </select>
+            <p class="muted">Semakin lama berlangganan, semakin hemat biaya per bulannya.</p>
+          </div>
+          <div id="pricingPlans" class="pricing-grid"></div>
+          <div class="subscription-note"><i data-lucide="shield-check"></i><span>Data usaha tetap milik Anda. Lakukan ekspor cadangan secara berkala. Fitur sinkronisasi cloud dan backup otomatis memerlukan layanan server yang terhubung.</span></div>
+          <div class="subscription-checkout" id="subscriptionCheckout" hidden>
+            <div id="subscriptionOrderSummary"></div>
+            <h4>Metode pembayaran</h4>
+            <div class="payment-methods" id="subscriptionPaymentMethods">
+              <button type="button" class="payment-method active" data-method="qris">QRIS</button>
+              <button type="button" class="payment-method" data-method="bank">Transfer bank</button>
+              <button type="button" class="payment-method" data-method="ewallet">E-wallet</button>
+            </div>
+            <div id="subscriptionPaymentDetail"></div>
+            <button id="btnKonfirmasiLangganan" type="button" class="btn btn-primary btn-block"><i data-lucide="message-circle"></i> Konfirmasi pembayaran via WhatsApp</button>
+            <p class="muted payment-caption">Paket akan diaktifkan setelah pembayaran diverifikasi oleh admin. Jangan kirim kata sandi atau kode OTP.</p>
+          </div>
+        </section>
+
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<dialog id="modalResident" class="modal">
+  <form id="formResident" novalidate>
+    <header class="modal-head"><h3 id="residentTitle" data-i18n="m_res_add">Tambah Penghuni</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+    <div class="modal-body grid-2">
+      <input type="hidden" name="id">
+      <label class="field full"><span data-i18n="f_fullname">Nama Lengkap</span><input name="fullName" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_phone">Nomor Telepon / WhatsApp</span><input name="phone" type="tel" placeholder="08xxxxxxxxxx" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_room">Kamar</span><select name="roomId" id="residentRoom" required></select><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_rent">Harga Sewa per Bulan (Rp)</span><input name="rent" type="number" min="0" step="1000" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_start">Tanggal Mulai Tinggal</span><input name="startDate" type="date" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_dueday">Jatuh Tempo Tiap Tanggal</span><input name="dueDay" type="number" min="1" max="31" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_photo">Foto (opsional)</span><input name="photo" type="file" accept="image/*"></label>
+    </div>
+    <footer class="modal-foot"><button type="button" class="btn btn-ghost" data-close data-i18n="cancel">Batal</button><button class="btn btn-primary" data-i18n="save">Simpan</button></footer>
+  </form>
+</dialog>
+
+<dialog id="modalResDetail" class="modal modal-lg">
+  <header class="modal-head"><h3 data-i18n="m_res_detail">Detail Penghuni</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+  <div id="resDetailBody" class="modal-body"></div>
+</dialog>
+
+<dialog id="modalRoom" class="modal">
+  <form id="formRoom" novalidate>
+    <header class="modal-head"><h3 id="roomTitle" data-i18n="m_room_add">Tambah Kamar</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+    <div class="modal-body grid-2">
+      <input type="hidden" name="id">
+      <label class="field"><span data-i18n="f_room_no">Nomor Kamar</span><input name="number" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_type">Tipe Kamar</span><select name="typeId" id="roomTypeSelect" required></select><small class="err"></small></label>
+      <label class="field full"><span data-i18n="f_price">Harga Sewa per Bulan (Rp)</span><input name="price" type="number" min="0" step="1000" required><small class="err"></small></label>
+      <label class="field full"><span data-i18n="f_facilities">Fasilitas</span><textarea name="facilities" rows="2"></textarea></label>
+    </div>
+    <footer class="modal-foot"><button type="button" class="btn btn-ghost" data-close data-i18n="cancel">Batal</button><button class="btn btn-primary" data-i18n="save">Simpan</button></footer>
+  </form>
+</dialog>
+
+<dialog id="modalRoomDetail" class="modal modal-lg">
+  <header class="modal-head"><h3 data-i18n="m_room_detail">Detail Kamar</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+  <div id="roomDetailBody" class="modal-body"></div>
+</dialog>
+
+<dialog id="modalPay" class="modal">
+  <form id="formPay" novalidate>
+    <header class="modal-head"><h3 data-i18n="m_pay">Tandai Lunas</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+    <div class="modal-body grid-2">
+      <input type="hidden" name="billId">
+      <div id="payInfo" class="full pay-info"></div>
+      <label class="field"><span data-i18n="f_paydate">Tanggal Pembayaran</span><input name="date" type="date" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_method">Metode Pembayaran</span><select name="method" data-fill="methods" required></select></label>
+    </div>
+    <footer class="modal-foot"><button type="button" class="btn btn-ghost" data-close data-i18n="cancel">Batal</button><button class="btn btn-primary" data-i18n="pay_confirm">Konfirmasi pembayaran</button></footer>
+  </form>
+</dialog>
+
+<dialog id="modalReceipt" class="modal">
+  <header class="modal-head"><h3 data-i18n="m_receipt">Bukti Pembayaran</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+  <div id="receiptBody" class="modal-body"></div>
+  <footer class="modal-foot">
+    <button class="btn btn-ghost" id="btnReceiptPrint"><i data-lucide="printer"></i><span data-i18n="print_receipt">Cetak Struk</span></button>
+    <button class="btn btn-ghost" id="btnReceiptWA"><i data-lucide="message-circle"></i><span data-i18n="share_wa">Bagikan WhatsApp</span></button>
+    <button class="btn btn-primary" id="btnReceiptPdf"><i data-lucide="file-down"></i><span data-i18n="download_pdf">Unduh PDF</span></button>
+  </footer>
+</dialog>
+
+<dialog id="modalExpense" class="modal">
+  <form id="formExpense" novalidate>
+    <header class="modal-head"><h3 id="expenseTitle" data-i18n="m_exp_add">Tambah Pengeluaran</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+    <div class="modal-body grid-2">
+      <input type="hidden" name="id">
+      <label class="field full"><span data-i18n="f_exp_name">Nama Pengeluaran</span><input name="name" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_category">Kategori</span><select name="category" data-fill="categories" required></select></label>
+      <label class="field"><span data-i18n="f_cost">Jumlah Biaya (Rp)</span><input name="amount" type="number" min="1" step="1000" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_date">Tanggal</span><input name="date" type="date" required><small class="err"></small></label>
+      <label class="field"><span data-i18n="f_method">Metode Pembayaran</span><select name="method" data-fill="methods" required></select></label>
+      <label class="field full"><span data-i18n="f_note">Catatan</span><textarea name="note" rows="2"></textarea></label>
+    </div>
+    <footer class="modal-foot"><button type="button" class="btn btn-ghost" data-close data-i18n="cancel">Batal</button><button class="btn btn-primary" data-i18n="save">Simpan</button></footer>
+  </form>
+</dialog>
+
+<dialog id="modalReminder" class="modal">
+  <header class="modal-head"><h3 data-i18n="m_rem">Kirim Pengingat</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+  <div class="modal-body">
+    <p id="remTo" class="pay-info"></p>
+    <label class="field"><span data-i18n="f_template">Jenis pesan</span><select id="remTemplate" data-fill="templates"></select></label>
+    <label class="field"><span data-i18n="f_message">Isi pesan</span><textarea id="remText" rows="7"></textarea></label>
+    <p id="remStatus" class="note" hidden></p>
+  </div>
+  <footer class="modal-foot">
+    <button type="button" class="btn btn-ghost" data-close data-i18n="close">Tutup</button>
+    <button type="button" class="btn btn-success" id="btnRemConfirm" hidden data-i18n="mark_sent">Sudah dikirim</button>
+    <button type="button" class="btn btn-primary" id="btnRemOpen"><i data-lucide="message-circle"></i><span data-i18n="open_wa">Buka WhatsApp</span></button>
+  </footer>
+</dialog>
+
+<dialog id="modalBulk" class="modal modal-lg">
+  <header class="modal-head"><h3 data-i18n="m_bulk">Pengingat Massal</h3><button type="button" class="icon-btn" data-close aria-label="Tutup"><i data-lucide="x"></i></button></header>
+  <div class="modal-body">
+    <div id="bulkSelect">
+      <p class="muted" data-i18n="bulk_desc">Pilih penghuni yang mau diingatkan. Pesan dibuka satu per satu dan harus kamu kirim sendiri di WhatsApp.</p>
+      <label class="check"><input type="checkbox" id="bulkAll"><span data-i18n="select_all">Pilih semua</span></label>
+      <div id="bulkList"></div>
+    </div>
+    <div id="bulkQueue" hidden>
+      <p id="bulkProgress" class="muted"></p>
+      <p id="bulkCurrent" class="pay-info"></p>
+      <textarea id="bulkText" rows="7" readonly></textarea>
+    </div>
+  </div>
+  <footer class="modal-foot">
+    <button type="button" class="btn btn-ghost" data-close data-i18n="close">Tutup</button>
+    <button type="button" class="btn btn-primary" id="btnBulkStart" data-i18n="bulk_start">Mulai antrean</button>
+    <button type="button" class="btn btn-ghost" id="btnBulkSkip" hidden data-i18n="skip">Lewati</button>
+    <button type="button" class="btn btn-primary" id="btnBulkOpen" hidden><i data-lucide="message-circle"></i><span data-i18n="open_wa">Buka WhatsApp</span></button>
+    <button type="button" class="btn btn-success" id="btnBulkConfirm" hidden data-i18n="mark_sent_next">Sudah dikirim, lanjut</button>
+  </footer>
+</dialog>
+
+<dialog id="dlgConfirm" class="modal modal-sm">
+  <header class="modal-head"><h3 id="confirmTitle">Konfirmasi</h3></header>
+  <div class="modal-body"><p id="confirmMsg"></p></div>
+  <footer class="modal-foot"><button type="button" class="btn btn-ghost" id="confirmNo" data-i18n="cancel">Batal</button><button type="button" class="btn btn-danger" id="confirmYes" data-i18n="yes">Ya, lanjutkan</button></footer>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<!-- Library Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
+</body>
+</html>
